@@ -1,0 +1,11 @@
+# Archivos y carpetas a ignorar por Git
+*.pyc
+*.o
+*.bin
+*.log
+.DS_Store
+.vscode/
+.idea/
+build/
+.pio/
+.env
