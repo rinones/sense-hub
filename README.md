@@ -1,78 +1,27 @@
-# Sense-Hub
+# DIY Environmental and Security Monitoring System with Mainframe Integration
 
-## General Description
-Sense-Hub is a modular platform based on ESP32 for smart monitoring and control of environments. It allows the integration of multiple sensors and devices, facilitating supervision, automation, and efficient management in a wide range of applications. Its scalable and flexible design makes it ideal for Internet of Things (IoT) projects.
+Welcome to my first professional IT project!  
+This repository showcases a DIY environmental and security monitoring system designed to demonstrate my learning and skills in mainframe environments (COBOL, CICS, DB2). The goal is to replicate the robustness, reliability, and standards of mission-critical systems used in banking, stock exchanges, and large financial institutions by integrating a network of ESP32 microcontrollers and sensors with a secure, transaction-oriented mainframe backend.
 
 ## Table of Contents
-- [Required Hardware](#required-hardware)
-- [Wiring Diagram](#wiring-diagram)
-- [Dependencies and Libraries](#dependencies-and-libraries)
-- [Installation and Setup](#installation-and-setup)
-- [Code Structure](#code-structure)
-- [Operation](#operation)
-- [Testing and Results](#testing-and-results)
-- [Future Improvements](#future-improvements)
-- [License and Credits](#license-and-credits)
 
-## Required Hardware
-- ESP32 (recommended model: DevKit v1)
-- [Add here additional sensors or modules]
-- 5V Power Supply
-- Breadboard and Dupont cables
+- [Introduction and Justification](01_introduction_and_justification.md)
+- [General Architecture](02_general_architecture.md)
+- [Microcontroller Firmware](03_microcontrollers_firmware/README.md)
+- [Middleware Integration](04_middleware_integration/README.md)
+- [Backend Mainframe (COBOL, CICS, DB2)](05_backend_mainframe/README.md)
+- [Scalability Tests](06_scalability_tests.md)
+- [Technical Documentation](07_technical_documentation/deployment_manual.md)
+- [List of Modules and Electronic Components](docs/modules_and_components.md)
 
-## Wiring Diagram
-Include your wiring diagram here:
+## Project Highlights
 
-![Wiring Diagram](docs/wiring.png)
+- **Professional introduction and justification** of the approach and replicated challenges ([see here](01_introduction_and_justification.md)).
+- **Detailed architecture** integrating electronics and mainframe technologies.
+- **Firmware and sensor code** for ESP32 microcontrollers.
+- **Integration examples** with mainframe processing in COBOL, CICS, and DB2.
+- **Documentation and testing** for scalability, security, and traceability.
 
-## Dependencies and Libraries
-- [Example] `ESPAsyncWebServer` - Asynchronous web server for ESP32
-- [Example] `Adafruit_Sensor` - Sensor libraries
-- Install from Arduino IDE or PlatformIO library manager
+---
 
-## Installation and Setup
-
-1. Clone this repository:
-   ```sh
-   git clone https://github.com/YOURUSER/sense-hub.git
-   ```
-2. Install the necessary dependencies.
-3. Configure your parameters in `include/config.h`.
-
-## Code Structure
-```plaintext
-.
-├── docs/
-│   └── wiring.png
-├── src/
-│   └── main.cpp
-├── include/
-│   └── config.h
-├── test/
-│   └── test_example.cpp
-├── .gitignore
-├── README.md
-└── LICENSE
-```
-- `src/main.cpp`: Main project code.
-- `include/config.h`: Pin configuration, credentials, parameters.
-- `docs/`: Documents, images, diagrams.
-- `test/`: Unit or integration tests.
-
-## Operation
-Describe here the basic flow of the project, main logic, and expected behavior.
-
-## Testing and Results
-Add sample logs, screenshots, prototype photos, test results, and details on issues encountered and how they were resolved.
-
-## Future Improvements
-- [ ] Add more sensors
-- [ ] Implement OTA (WiFi update)
-- [ ] Improve energy efficiency
-
-## License and Credits
-MIT License
-
-Credits to:
-- [Used libraries]
-- [Contributors]
+As this is my first project, it reflects my commitment to learning, my passion for critical enterprise systems, and my readiness to grow in the IT sector. For a detailed explanation of how this project replicates real-world challenges and how you can use it as a portfolio reference, see [01_introduction_and_justification.md](01_introduction_and_justification.md).
