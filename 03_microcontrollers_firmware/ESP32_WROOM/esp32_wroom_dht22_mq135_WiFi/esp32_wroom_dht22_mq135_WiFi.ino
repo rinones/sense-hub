@@ -5,6 +5,9 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <time.h>
+#include <FS.h>
+#include <SPIFFS.h>
+#include <ESPAsyncWebServer.h>
 
 // Pines y configuración
 #define DHTPIN 4
@@ -19,19 +22,39 @@ DHT dht(DHTPIN, DHTTYPE);
 
 const char *ssid = "MIWIFI_Xejf_2.4";
 const char *password = "QaecC6Np";
-
-// IP de tu PC, debe estar en la misma red WiFi
 const char *serverName = "http://192.168.1.162:5000/datos";
-
-// Zona horaria para España peninsular (Getxo)
 const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 3600;
 const int daylightOffset_sec = 3600;
+
+struct SensorDataBin
+{
+  uint16_t year;
+  uint8_t month;
+  uint8_t day;
+  uint8_t hour;
+  uint8_t minute;
+  uint8_t second;
+  float temperatura;
+  float humedad;
+  int mq135;
+};
+
+AsyncWebServer server(80);
 
 void setup()
 {
   Serial.begin(115200);
   dht.begin();
+
+  // Iniciar SPIFFS
+  if (!SPIFFS.begin(true))
+  {
+    Serial.println("Error al montar SPIFFS");
+    while (true)
+      ;
+  }
+
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
   {
     Serial.println(F("No se encontró la pantalla SSD1306"));
@@ -81,9 +104,29 @@ void setup()
     display.display();
     delay(1000);
 
-    // Configura NTP
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   }
+
+  // Endpoint para descargar el archivo binario
+  server.on("/download", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    if (SPIFFS.exists("/datos.bin")) {
+      request->send(SPIFFS, "/datos.bin", "application/octet-stream");
+    } else {
+      request->send(404, "text/plain", "Archivo no encontrado");
+    } });
+
+  // Endpoint para limpiar el archivo binario
+  server.on("/clear", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    if (SPIFFS.exists("/datos.bin")) {
+      SPIFFS.remove("/datos.bin");
+      request->send(200, "text/plain", "Archivo datos.bin eliminado correctamente");
+    } else {
+      request->send(200, "text/plain", "Archivo datos.bin no existe");
+    } });
+
+  server.begin();
 }
 
 void loop()
@@ -139,18 +182,40 @@ void loop()
   display.print("MQ135: ");
   display.println(mq135);
 
-  // Aquí empieza la lógica del mensaje dinámico según si la transmisión HTTP fue correcta o no
+  // Guardar los datos en binario
+  SensorDataBin data;
+  data.year = timeinfo.tm_year + 1900;
+  data.month = timeinfo.tm_mon + 1;
+  data.day = timeinfo.tm_mday;
+  data.hour = timeinfo.tm_hour;
+  data.minute = timeinfo.tm_min;
+  data.second = timeinfo.tm_sec;
+  data.temperatura = temperatura;
+  data.humedad = humedad;
+  data.mq135 = mq135;
+
+  File file = SPIFFS.open("/datos.bin", FILE_APPEND);
+  if (!file)
+  {
+    Serial.println("No se pudo abrir datos.bin para escribir.");
+  }
+  else
+  {
+    file.write((uint8_t *)&data, sizeof(SensorDataBin));
+    file.close();
+    Serial.println("Datos guardados en binario (SPIFFS).");
+  }
+
+  // Enviar por HTTP si hay WiFi
   String httpMsg = "";
   int httpResponseCode = -1;
 
-  // Enviar datos por HTTP POST si WiFi está conectado
   if (WiFi.status() == WL_CONNECTED)
   {
     HTTPClient http;
-    http.begin(serverName); // URL del servidor Flask
+    http.begin(serverName);
     http.addHeader("Content-Type", "application/json");
 
-    // Construimos el JSON con los datos
     String postData = "{";
     postData += "\"fecha\":\"" + String(fecha) + "\",";
     postData += "\"hora\":\"" + String(hora) + "\",";
@@ -165,23 +230,19 @@ void loop()
     Serial.println(httpResponseCode);
     Serial.println(http.errorToString(httpResponseCode));
 
-    display.setCursor(0, 56); // Última línea
+    display.setCursor(0, 56);
     if (httpResponseCode > 0)
     {
-      Serial.print("HTTP Response code: ");
-      Serial.println(httpResponseCode);
       httpMsg = "HTTP OK: " + String(httpResponseCode);
       display.print(httpMsg);
     }
     else
     {
-      Serial.print("Error en la petición HTTP: ");
-      Serial.println(httpResponseCode);
       httpMsg = "HTTP FAIL!";
       display.print(httpMsg);
     }
     display.display();
-    delay(1000); // Mostrar mensaje 1 segundo
+    delay(1000);
 
     http.end();
   }
@@ -195,7 +256,5 @@ void loop()
     delay(1000);
   }
 
-  // Fin de la lógica dinámica del mensaje
-
-  delay(2000); // Espera 2 segundos antes de la próxima lectura
+  delay(2000);
 }
