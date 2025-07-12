@@ -27,6 +27,8 @@ const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 3600;
 const int daylightOffset_sec = 3600;
 
+// Forzar sin padding
+#pragma pack(push, 1)
 struct SensorDataBin
 {
   uint16_t year;
@@ -37,8 +39,9 @@ struct SensorDataBin
   uint8_t second;
   float temperatura;
   float humedad;
-  int mq135;
+  int32_t mq135;
 };
+#pragma pack(pop)
 
 AsyncWebServer server(80);
 
@@ -47,19 +50,21 @@ void setup()
   Serial.begin(115200);
   dht.begin();
 
+  // Imprimir tamaño de la estructura (debe ser 19)
+  Serial.print("sizeof(SensorDataBin): ");
+  Serial.println(sizeof(SensorDataBin));
+
   // Iniciar SPIFFS
   if (!SPIFFS.begin(true))
   {
     Serial.println("Error al montar SPIFFS");
-    while (true)
-      ;
+    while (true);
   }
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
   {
     Serial.println(F("No se encontró la pantalla SSD1306"));
-    while (true)
-      ;
+    while (true);
   }
   display.clearDisplay();
   display.setTextSize(1);
@@ -111,7 +116,9 @@ void setup()
   server.on("/download", HTTP_GET, [](AsyncWebServerRequest *request)
             {
     if (SPIFFS.exists("/datos.bin")) {
-      request->send(SPIFFS, "/datos.bin", "application/octet-stream");
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/datos.bin", "application/octet-stream");
+      response->addHeader("Content-Disposition", "attachment; filename=\"datos.bin\"");
+      request->send(response);
     } else {
       request->send(404, "text/plain", "Archivo no encontrado");
     } });
@@ -133,7 +140,7 @@ void loop()
 {
   float temperatura = dht.readTemperature();
   float humedad = dht.readHumidity();
-  int mq135 = analogRead(MQ135_AO);
+  int32_t mq135 = analogRead(MQ135_AO);
 
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo))

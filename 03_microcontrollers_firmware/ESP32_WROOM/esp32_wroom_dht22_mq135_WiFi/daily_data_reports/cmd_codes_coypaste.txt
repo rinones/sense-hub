@@ -1,0 +1,11 @@
+360'¡cd C:\Users\Principal\Documents\GitHub\sense-hub\03_microcontrollers_firmware\ESP32_WROOM\esp32_wroom_dht22_mq135_WiFi
+
+cd C:\Users\Principal\Documents\GitHub\sense-hub\03_microcontrollers_firmware\ESP32_WROOM\esp32_wroom_dht22_mq135_WiFi\daily_data_reports
+
+python server.py
+
+python graphic_window.py
+
+http://192.168.1.181/download
+
+http://192.168.1.181/clear
